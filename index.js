@@ -1,22 +1,30 @@
 const express = require('express');
+const mongoose = require('mongoose');
+const cookieSesion = require('cookie-session');
+const passport = require('passport');
+const keys = require('./config/keys');
+require('./models/User');
+require('./services/passport');
+
+mongoose.connect(keys.mongoURI);
+
 const app = express();
 
-// set the port of our application
-// process.env.PORT lets the port be set by Heroku
+app.use(
+	cookieSesion({
+		maxAge: 30 * 24 * 60 * 60 * 1000,
+		keys: [keys.cookieKey]
+	})
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+require('./routes/authRoutes')(app);
+
 var port = process.env.PORT || 8080;
 
-// set the view engine to ejs
-//app.set('view engine', 'ejs');
-
-// make express look in the public directory for assets (css/js/img)
-//app.use(express.static(__dirname + '/public'));
-
-// set the home page route
-app.get('/', function(req, res) {
-
-    // ejs render automatically looks in the views folder
-    res.send({bye: 'felicia'});
-});
 
 app.listen(port, function() {
     console.log('Our app is running on http://localhost:' + port);
